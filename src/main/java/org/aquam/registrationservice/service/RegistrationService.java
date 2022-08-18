@@ -5,6 +5,5 @@ import org.springframework.stereotype.Service;
 
 
 public interface RegistrationService {
-
     String register(RegistrationRequest registrationRequest);
 }
