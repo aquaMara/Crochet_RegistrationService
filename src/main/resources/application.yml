@@ -1,0 +1,18 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: registrationService
+  datasource:
+    url: jdbc:postgresql://localhost:5432/crochet
+    username: 'postgres'
+    password: 'aquaM236441'
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        format_sql: true
