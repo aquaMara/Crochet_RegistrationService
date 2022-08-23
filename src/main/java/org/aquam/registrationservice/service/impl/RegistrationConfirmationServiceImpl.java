@@ -1,82 +1,67 @@
 package org.aquam.registrationservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.aquam.registrationservice.config.ApplicationProperties;
+import org.aquam.registrationservice.config.RetrofitConfiguration;
 import org.aquam.registrationservice.config.retrofit.EmailServiceAPI;
-import org.aquam.registrationservice.config.retrofit.RetrofitSender;
-import org.aquam.registrationservice.model.AppUser;
-import org.aquam.registrationservice.repository.RegistrationRepository;
+import org.aquam.registrationservice.model.ConfirmationData;
 import org.aquam.registrationservice.service.RegistrationConfirmationService;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class RegistrationConfirmationServiceImpl implements RegistrationConfirmationService {
 
+    private final RetrofitConfiguration retrofitSender;
+    private final ApplicationProperties applicationProperties;
+
     @Override
-    public void sendConfirmationSequence(Long id) {
+    public String sendConfirmationSequence(Long id, String email) {
+
         String confirmationSequence = generateConfirmationSequence(id);
-        System.out.println(confirmationSequence);
-        String confirmationLink = "http://localhost:8081/registration/confirm/" + confirmationSequence;
-        System.out.println(confirmationLink);
-        // todo: send sequence
-        EmailServiceAPI service = RetrofitSender.createService(EmailServiceAPI.class);
-        Call<String> syncCall = service.registerCustomer(confirmationLink);
+        String confirmationLink =
+                applicationProperties.getREGISTRATION_API_BASE_URL()
+                        + "registration/confirm/"
+                        + confirmationSequence;
+        EmailServiceAPI service = retrofitSender.createService(EmailServiceAPI.class);
+        ConfirmationData confirmationData = new ConfirmationData(email, confirmationLink);
+        confirmationData.setEmail(email);
+        confirmationData.setConfirmationLink(confirmationLink);
+        Call<String> syncCall = service.sendEmail(confirmationData);
+        String responseBody = "";
         try {
             Response<String> response = syncCall.execute();
-            String str = response.body();
-            System.out.println(str);
+            responseBody = response.body();
+            System.out.println(response);
+        } catch (ConnectException e) {
+            System.out.println("ConnectException");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("IOException");
         }
-        // todo: get response status about if email is sent: ok or not ok
+
+        return responseBody;
 
     }
 
-    // encode
     @Override
     public String generateConfirmationSequence(Long id) {
-        // todo: generate sequence based on id and expiration time
-        LocalDateTime registrationAttempt = LocalDateTime.now();
-        LocalDateTime expiresAt = LocalDateTime.now().minusHours(24);
-        String confirmationSequence = expiresAt.toString() + id.toString();
-        return confirmationSequence;
+
+        String encodedId = Long.toHexString((id ^ applicationProperties.getKEY()));
+        return encodedId;
     }
 
-    // decode
-    // move to registration repository, don't use it here
-    // from registration repository
     @Override
-    public Boolean confirm(String confirmationSequence) {
-        // todo: decode confirmation sequence
-        // todo: check if not expired (if expired - delete and register again)
-        // todo: check if id exists (if not - error) OR get the id to registration repository
-        // or not todo: if everything is ok - return confirmed status true
+    public Long decodeConfirmationSequence(String confirmationSequence) {
 
-        /*
-        Long id = Long.valueOf(confirmationSequence);
-
-        Optional<AppUser> byId = registrationRepository.findById(id);
-
-        if (registrationRepository.findById(id).isEmpty())
-            throw new EntityNotFoundException("no registration attempt");
-
-        AppUser userToConfirm = registrationRepository.findById(id).get();
-
-        // todo: check if confirmationSequence is expired -> should re-register
-
-        userToConfirm.setEnabled(true);
-        registrationRepository.save(userToConfirm);
-         */
-        return true;
+        Long decodedId = Long.parseLong(confirmationSequence, 16) ^ applicationProperties.getKEY();
+        return decodedId;
     }
 }
