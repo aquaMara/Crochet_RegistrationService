@@ -1,5 +1,7 @@
 package org.aquam.registrationservice.model;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,13 +11,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class AppUser implements UserDetails {
 
@@ -29,10 +31,16 @@ public class AppUser implements UserDetails {
 
     private String name;
     private String email;
+    private LocalDateTime registrationDate;
 
     private Boolean locked;
     private Boolean enabled;
 
+    public AppUser(String username, String password, String email) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
