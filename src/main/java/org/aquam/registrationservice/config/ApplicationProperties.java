@@ -9,14 +9,14 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationProperties {
 
     @Value("${emailAPI.address}")
-    private String EMAIL_API_BASE_URL;
+    private String emailApiBaseUrl;
 
     @Value("${registrationAPI.address}")
-    private String REGISTRATION_API_BASE_URL;
+    private String registrationApiBaseUrl;
 
     @Value("${expiration.time.hours}")
-    private Long EXPIRATION_TIME_HOURS;
+    private Long expirationTimeInHours;
 
     @Value("${key}")
-    private Long KEY;
+    private Long key;
 }

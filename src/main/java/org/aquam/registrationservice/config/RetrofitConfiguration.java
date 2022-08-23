@@ -19,7 +19,7 @@ public class RetrofitConfiguration {
         Gson gson = new GsonBuilder().setLenient().create();
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(applicationProperties.getEMAIL_API_BASE_URL())
+                .baseUrl(applicationProperties.getEmailApiBaseUrl())
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(httpClient.build())
