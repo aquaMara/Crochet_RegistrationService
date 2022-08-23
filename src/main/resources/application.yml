@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: registrationService
+    name: CrochetRegistrationService
   datasource:
     url: jdbc:postgresql://localhost:5432/crochet
     username: 'postgres'
