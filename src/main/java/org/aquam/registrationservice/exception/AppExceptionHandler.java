@@ -16,33 +16,29 @@ import java.time.ZonedDateTime;
 @ControllerAdvice
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(EntityExistsException.class)
-    public ResponseEntity<AppResponse> handleEntityExistsException(PersistenceException exception) {
-        AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.NOT_FOUND);
+    @ExceptionHandler({EntityExistsException.class, IllegalStateException.class})
+    public ResponseEntity<AppResponse> handleBadRequest(RuntimeException exception) {
+        AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);    // 404
-    }
-
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<AppResponse> handleEntityNotFoundException(PersistenceException exception) {
-        AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);    // 404
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<AppResponse> handleIllegalStateException(RuntimeException exception) {
-        AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<AppResponse> handleIOException(Exception exception) {
-        AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR);
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);     // 500
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<AppResponse> handleConstraintViolationException(ConstraintViolationException exception) {
         AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.BAD_REQUEST, exception.getConstraintViolations());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);    // 404
     }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<AppResponse> handleNotFound(PersistenceException exception) {
+        AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);    // 404
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<AppResponse> handleInternalServerError(Exception exception) {
+        AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);     // 500
+    }
+
+
 }
