@@ -28,27 +28,27 @@ public class RegistrationConfirmationServiceImpl implements RegistrationConfirma
 
         String confirmationSequence = generateConfirmationSequence(id);
         String confirmationLink =
-                applicationProperties.getREGISTRATION_API_BASE_URL()
+                applicationProperties.getRegistrationApiBaseUrl()
                         + "registration/confirm/"
                         + confirmationSequence;
+        return makeApiCall(new ConfirmationData(email, confirmationLink));
+    }
+
+    @Override
+    public String makeApiCall(ConfirmationData confirmationData) {
+
         EmailServiceAPI service = retrofitSender.createService(EmailServiceAPI.class);
-        ConfirmationData confirmationData = new ConfirmationData(email, confirmationLink);
-        confirmationData.setEmail(email);
-        confirmationData.setConfirmationLink(confirmationLink);
         Call<String> syncCall = service.sendEmail(confirmationData);
         String responseBody = "";
         try {
             Response<String> response = syncCall.execute();
             responseBody = response.body();
-            System.out.println(response);
         } catch (ConnectException e) {
-            System.out.println("ConnectException");
+            System.out.println("Could not connect to Email server, check the connection");
         } catch (IOException e) {
             System.out.println("IOException");
         }
-
         return responseBody;
-
     }
 
     @Override

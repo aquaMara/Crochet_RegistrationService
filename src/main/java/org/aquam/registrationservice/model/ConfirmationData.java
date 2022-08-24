@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.Value;
 
-@Data
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
+@Value
 public class ConfirmationData {
 
     private String email;
     private String confirmationLink;
+
 }
