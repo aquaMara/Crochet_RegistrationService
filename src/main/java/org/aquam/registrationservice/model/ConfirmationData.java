@@ -12,5 +12,4 @@ public class ConfirmationData {
 
     private String email;
     private String confirmationLink;
-
 }
