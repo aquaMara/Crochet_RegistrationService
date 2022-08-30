@@ -9,7 +9,9 @@ import javax.validation.Valid;
 public interface RegistrationService {
 
     String register(RegistrationRequest registrationRequest);
+    AppUser saveUser(AppUser user);
     String confirmRegistration(String confirmationSequence);
+    Boolean checkIfUserValid(AppUser user);
     AppUser convertRequestToEntity(@Valid RegistrationRequest registrationRequest);
     void unconfirmedAccountsCleanup();
 }

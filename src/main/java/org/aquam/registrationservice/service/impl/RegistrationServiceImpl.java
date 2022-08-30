@@ -44,12 +44,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new EntityExistsException("email exists");
 
         AppUser user = convertRequestToEntity(registrationRequest);
-        user.setPassword(bCryptPasswordEncoder.encode(registrationRequest.getPassword()));
-        user.setAppUserRole(AppUserRole.USER);
-        user.setRegistrationDate(LocalDateTime.now());
-        user.setLocked(false);
-        user.setEnabled(false);
-        AppUser userFromRepository = registrationRepository.save(user);
+        AppUser userFromRepository = saveUser(user);
 
         return registrationConfirmationService
                 .sendConfirmationSequence(userFromRepository.getId(), userFromRepository.getEmail());
@@ -57,26 +52,40 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
+    public AppUser saveUser(AppUser user) {
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        user.setAppUserRole(AppUserRole.USER);
+        user.setRegistrationDate(LocalDateTime.now());
+        user.setLocked(false);
+        user.setEnabled(false);
+        return registrationRepository.save(user);
+    }
+
+    @Override
     public String confirmRegistration(String confirmationSequence) {
         Long id = registrationConfirmationService.decodeConfirmationSequence(confirmationSequence);
-
-        if (registrationRepository.findById(id).isEmpty()) {
+        if (registrationRepository.findById(id).isEmpty())
             throw new EntityNotFoundException("confirmation link error, try to re-register");
-        }
 
         AppUser user = registrationRepository.findById(id).get();
-        LocalDateTime expirationThreshold = LocalDateTime.now().minusHours(applicationProperties.getEXPIRATION_TIME_HOURS());
+        checkIfUserValid(user);
 
-        if (user.getEnabled()) {
-            throw new IllegalStateException("account already enabled");
-        } else if (user.getRegistrationDate().isBefore(expirationThreshold)) {
-            registrationRepository.deleteById(id);
-            throw new IllegalStateException("your link is expired, try again");
-        }
         user.setEnabled(true);
         user.setRegistrationDate(LocalDateTime.now());
         registrationRepository.save(user);
         return "successfully registered";
+    }
+
+    @Override
+    public Boolean checkIfUserValid(AppUser user) {
+        LocalDateTime expirationThreshold = LocalDateTime.now().minusHours(applicationProperties.getEXPIRATION_TIME_HOURS());
+        if (user.getEnabled()) {
+            throw new IllegalStateException("account already enabled");
+        } else if (user.getRegistrationDate().isBefore(expirationThreshold)) {
+            registrationRepository.deleteById(user.getId());
+            throw new IllegalStateException("your link is expired, try again");
+        }
+        return true;
     }
 
     @Override
