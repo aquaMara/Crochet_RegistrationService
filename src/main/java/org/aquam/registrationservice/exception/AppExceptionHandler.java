@@ -39,6 +39,4 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
         AppResponse response = new AppResponse(exception.getMessage(), ZonedDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);     // 500
     }
-
-
 }
