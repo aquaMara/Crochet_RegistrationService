@@ -6,6 +6,8 @@ import org.aquam.registrationservice.config.RetrofitConfiguration;
 import org.aquam.registrationservice.config.retrofit.EmailServiceAPI;
 import org.aquam.registrationservice.model.ConfirmationData;
 import org.aquam.registrationservice.service.RegistrationConfirmationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -22,6 +24,8 @@ public class RegistrationConfirmationServiceImpl implements RegistrationConfirma
 
     private final RetrofitConfiguration retrofitSender;
     private final ApplicationProperties applicationProperties;
+
+    Logger logger = LoggerFactory.getLogger(RegistrationConfirmationServiceImpl.class);
 
     @Override
     public String sendConfirmationSequence(Long id, String email) {
@@ -43,10 +47,9 @@ public class RegistrationConfirmationServiceImpl implements RegistrationConfirma
         try {
             Response<String> response = syncCall.execute();
             responseBody = response.body();
-        } catch (ConnectException e) {
-            System.out.println("Could not connect to Email server, check the connection");
-        } catch (IOException e) {
-            System.out.println("IOException");
+        } catch (Exception e) {
+            logger.error("Class: " + e.getClass() + " Message: " + e.getMessage() + " User email: " + confirmationData.getEmail());
+            throw new EmailSendingException("Something went wrong... If you don't get the email, please, contact support " + applicationProperties.getSupportTeamEmail());
         }
         return responseBody;
     }
