@@ -15,7 +15,6 @@ import java.util.Set;
 public class AppResponse {
 
     private final String message;
-    private final ZonedDateTime zonedDateTime;
     private final HttpStatus httpStatus;
     private Set<ConstraintViolation<?>> validationExceptions;
 }
